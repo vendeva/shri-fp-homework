@@ -49,28 +49,21 @@ const filterDataByColor = (fn) => (data) => filter(fn, data);
 const countItemsByColor = (fn) => compose(length, values, filterDataByColor(fn));
 
 // 1. Красная звезда, зеленый квадрат, все остальные белые.
-export const validateFieldN1 = (data) => {
-    if (!allPass([compose(isWhite, getCircle), compose(isWhite, getTriangle)])(data)) {
-        return false;
-    }
-
-    return allPass([compose(isRed, getStar), compose(isGreen, getSquare)])(data);
-};
+export const validateFieldN1 = allPass([
+    compose(isRed, getStar),
+    compose(isGreen, getSquare),
+    compose(equals(2), countItemsByColor(isWhite)),
+]);
 
 // 2. Как минимум две фигуры зеленые.
 export const validateFieldN2 = compose(lte(2), countItemsByColor(isGreen));
 
 // 3. Количество красных фигур равно кол-ву синих.
-export const validateFieldN3 = (data) => {
-    if (
-        allPass([compose(not, countItemsByColor(isBlue)), compose(not, countItemsByColor(isRed))])(
-            data
-        )
-    ) {
-        return false;
-    }
-    return equals(countItemsByColor(isBlue)(data), countItemsByColor(isRed)(data));
-};
+export const validateFieldN3 = allPass([
+    compose(lte(1), countItemsByColor(isBlue)),
+    compose(lte(1), countItemsByColor(isRed)),
+    (d) => equals(countItemsByColor(isBlue)(d), countItemsByColor(isRed)(d)),
+]);
 
 // 4. Синий круг, красная звезда, оранжевый квадрат треугольник любого цвета
 export const validateFieldN4 = allPass([
@@ -91,13 +84,13 @@ export const validateFieldN5 = compose(
 
 // 6. Ровно две зеленые фигуры (одна из зелёных – это треугольник), плюс одна красная. Четвёртая оставшаяся любого доступного цвета, но не нарушающая первые два условия
 export const validateFieldN6 = allPass([
-    compose(lte(2), countItemsByColor(isGreen)),
+    compose(equals(2), countItemsByColor(isGreen)),
     compose(isGreen, getTriangle),
-    compose(lte(1), countItemsByColor(isRed)),
+    compose(equals(1), countItemsByColor(isRed)),
 ]);
 
 // 7. Все фигуры оранжевые.
-export const validateFieldN7 = compose(lte(4), countItemsByColor(isOrange));
+export const validateFieldN7 = compose(equals(4), countItemsByColor(isOrange));
 
 // 8. Не красная и не белая звезда, остальные – любого цвета.
 export const validateFieldN8 = allPass([
@@ -106,12 +99,11 @@ export const validateFieldN8 = allPass([
 ]);
 
 // 9. Все фигуры зеленые.
-export const validateFieldN9 = compose(lte(4), countItemsByColor(isGreen));
+export const validateFieldN9 = compose(equals(4), countItemsByColor(isGreen));
 
 // 10. Треугольник и квадрат одного цвета (не белого), остальные – любого цвета
-export const validateFieldN10 = (data) => {
-    if (anyPass([compose(isWhite, getTriangle), compose(isWhite, getTriangle)])(data)) {
-        return false;
-    }
-    return equals(getTriangle(data), getSquare(data));
-};
+export const validateFieldN10 = allPass([
+    compose(not, isWhite, getTriangle),
+    compose(not, isWhite, getTriangle),
+    (d) => equals(getTriangle(d), getSquare(d)),
+]);
