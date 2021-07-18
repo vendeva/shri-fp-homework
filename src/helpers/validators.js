@@ -13,7 +13,6 @@
  * Если какие либо функции написаны руками (без использования библиотек) это не является ошибкой
  */
 import {
-    anyPass,
     allPass,
     compose,
     equals,
@@ -44,9 +43,7 @@ const isOrange = equals(ORANGE);
 const isGreen = equals(GREEN);
 const isWhite = equals(WHITE);
 
-const filterDataByColor = (fn) => (data) => filter(fn, data);
-
-const countItemsByColor = (fn) => compose(length, values, filterDataByColor(fn));
+const countItemsByColor = (fn) => compose(length, values, (d) => filter(fn, d));
 
 // 1. Красная звезда, зеленый квадрат, все остальные белые.
 export const validateFieldN1 = allPass([
@@ -103,7 +100,7 @@ export const validateFieldN9 = compose(equals(4), countItemsByColor(isGreen));
 
 // 10. Треугольник и квадрат одного цвета (не белого), остальные – любого цвета
 export const validateFieldN10 = allPass([
-    compose(not, isWhite, getTriangle),
+    compose(not, isWhite, getSquare),
     compose(not, isWhite, getTriangle),
     (d) => equals(getTriangle(d), getSquare(d)),
 ]);
