@@ -17,20 +17,18 @@
 import {
     allPass,
     compose,
-    equals,
-    filter,
-    reject,
     lte,
     test,
-    toString,
-    countBy,
-    reduce,
-    max,
+    tap,
+    __,
+    modulo,
+    otherwise,
+    andThen,
     prop,
-    not,
     length,
-    values,
+    replace,
     gte,
+    ifElse,
 } from "ramda";
 
 import Api from "../tools/api";
@@ -38,42 +36,46 @@ import Api from "../tools/api";
 const api = new Api();
 
 const validationValue = allPass([
-    test(/[0-9]\./),
+    test(/^[0-9]+(\.)?[0-9]+$/),
     lte(1),
     compose(allPass([gte(10), lte(2)]), length),
 ]);
 
-const wait = (time) =>
-    new Promise((resolve) => {
-        setTimeout(resolve, time);
-    });
-
 const processSequence = ({ value, writeLog, handleSuccess, handleError }) => {
     writeLog(value);
 
-    // Валидация входных данных
-    validationValue(value);
-
-    api.get("https://api.tech/numbers/base", { from: 2, to: 10, number: "01011010101" }).then(
-        ({ result }) => {
-            writeLog(result);
-        }
-    );
-
-    wait(2500)
-        .then(() => {
-            writeLog("SecondLog");
-
-            return wait(1500);
-        })
-        .then(() => {
-            writeLog("ThirdLog");
-
-            return wait(400);
-        })
-        .then(() => {
-            handleSuccess("Done");
-        });
+    ifElse(
+        validationValue,
+        compose(
+            andThen(
+                ifElse(
+                    test(/^[0-1]+$/),
+                    compose(
+                        otherwise(compose(tap(writeLog), (error) => `Ошибка запроса: ${error}`)),
+                        andThen(compose(handleSuccess, prop("result"))),
+                        api.get(__, {}),
+                        replace("{id}", __, `https://animals.tech/{id}`),
+                        tap(writeLog),
+                        modulo(__, 3),
+                        tap(writeLog),
+                        (number) => number ** 2,
+                        tap(writeLog),
+                        length,
+                        tap(writeLog)
+                    ),
+                    tap(writeLog)
+                )
+            ),
+            otherwise((error) => `Ошибка запроса: ${error}`),
+            andThen(prop("result")),
+            api.get("https://api.tech/numbers/base"),
+            (n) => ({ from: 10, to: 2, number: n }),
+            tap(writeLog),
+            Math.round,
+            Number
+        ),
+        () => handleError("ValidationError")
+    )(value);
 };
 
 export default processSequence;
