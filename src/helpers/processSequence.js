@@ -38,7 +38,7 @@ const api = new Api();
 const validationValue = allPass([
     test(/^[0-9]+(\.)?[0-9]+$/),
     lte(1),
-    compose(allPass([gte(10), lte(2)]), length),
+    compose(allPass([gte(9), lte(3)]), length),
 ]);
 
 const processSequence = ({ value, writeLog, handleSuccess, handleError }) => {

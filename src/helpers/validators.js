@@ -57,8 +57,8 @@ export const validateFieldN2 = compose(lte(2), countItemsByColor(isGreen));
 
 // 3. Количество красных фигур равно кол-ву синих.
 export const validateFieldN3 = allPass([
-    compose(lte(1), countItemsByColor(isBlue)),
-    compose(lte(1), countItemsByColor(isRed)),
+    // compose(lte(1), countItemsByColor(isBlue)),
+    // compose(lte(1), countItemsByColor(isRed)),
     (d) => equals(countItemsByColor(isBlue)(d), countItemsByColor(isRed)(d)),
 ]);
 
