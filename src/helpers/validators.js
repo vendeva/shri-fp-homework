@@ -26,6 +26,7 @@ import {
     not,
     length,
     values,
+    converge,
 } from "ramda";
 import { SHAPES, COLORS } from "../constants";
 
@@ -43,7 +44,7 @@ const isOrange = equals(ORANGE);
 const isGreen = equals(GREEN);
 const isWhite = equals(WHITE);
 
-const countItemsByColor = (fn) => compose(length, values, (d) => filter(fn, d));
+const countItemsByColor = (fn) => compose(length, values, filter(fn));
 
 // 1. Красная звезда, зеленый квадрат, все остальные белые.
 export const validateFieldN1 = allPass([
@@ -59,7 +60,7 @@ export const validateFieldN2 = compose(lte(2), countItemsByColor(isGreen));
 export const validateFieldN3 = allPass([
     // compose(lte(1), countItemsByColor(isBlue)),
     // compose(lte(1), countItemsByColor(isRed)),
-    (d) => equals(countItemsByColor(isBlue)(d), countItemsByColor(isRed)(d)),
+    converge(equals, [countItemsByColor(isBlue), countItemsByColor(isRed)]),
 ]);
 
 // 4. Синий круг, красная звезда, оранжевый квадрат треугольник любого цвета
@@ -102,5 +103,5 @@ export const validateFieldN9 = compose(equals(4), countItemsByColor(isGreen));
 export const validateFieldN10 = allPass([
     compose(not, isWhite, getSquare),
     compose(not, isWhite, getTriangle),
-    (d) => equals(getTriangle(d), getSquare(d)),
+    converge(equals, [getTriangle, getSquare]),
 ]);
